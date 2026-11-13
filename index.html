@@ -118,6 +118,15 @@
             top: var(--header-h, 72px);
             z-index: 30;
         }
+        /* HP landscape (layar pendek): foto lightbox berhenti di atas tombol & catatan */
+        @media (max-height: 500px) {
+            #lightboxImgWrapper { padding-bottom: 8.5rem !important; }
+            #lightboxNote { height: 2.5rem; }
+        }
+        /* HP: toolbar tidak ikut menempel agar foto tidak tertutup setengah layar */
+        @media (max-width: 767px) {
+            .gallery-toolbar { position: static; }
+        }
 
         /* ===== MODE TERKUNCI (BATAS WAKTU LEWAT) ===== */
         body.selection-locked .photo-card img.photo-img { cursor: zoom-in; }
@@ -140,25 +149,26 @@
     <script src="pengaturan.js"></script>
     <script src="tour.js"></script>
 </head>
-<body class="text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-900 pb-32 flex flex-col min-h-screen">
+<body class="text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-900 pb-48 flex flex-col min-h-screen">
 
     <!-- Blackout Overlay: muncul saat window kehilangan fokus (mis. Snipping Tool) -->
     <div id="protectionBlackout" class="hidden"></div>
 
     <header class="bg-white dark:bg-slate-800 shadow-sm border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40 transition-colors duration-300">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div id="headerIcon" class="logo-glyph w-10 h-10 flex items-center justify-center text-2xl">
+        <div class="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 sm:py-4 flex justify-between items-center gap-2">
+            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div id="headerIcon" class="logo-glyph w-9 h-9 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center text-xl sm:text-2xl">
                     <i class="fa-solid fa-camera-retro"></i>
                 </div>
-                <div id="headerLogoBox" class="hidden h-10 items-center"><img id="headerLogo" alt="" draggable="false" class="h-7 max-w-[120px] object-contain"></div>
-                <div>
-                    <h1 class="font-bold text-lg leading-tight tracking-tight text-slate-800 dark:text-white" id="headerVendorName">Client Portal</h1>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider" data-i18n="subtitle">Alat Seleksi Aman</p>
+                <div id="headerLogoBox" class="hidden h-10 items-center shrink-0"><img id="headerLogo" alt="" draggable="false" class="h-6 sm:h-7 max-w-[84px] sm:max-w-[120px] object-contain"></div>
+                <!-- di HP sempit, nama studio disembunyikan jika logo ada (logo sudah memuat nama) -->
+                <div id="headerNameBox" class="min-w-0">
+                    <h1 class="font-bold text-base sm:text-lg leading-tight tracking-tight text-slate-800 dark:text-white truncate" id="headerVendorName">Client Portal</h1>
+                    <p class="hidden sm:block text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider truncate" data-i18n="subtitle">Alat Seleksi Aman</p>
                 </div>
             </div>
-            
-            <div class="flex items-center gap-1.5 md:gap-2">
+
+            <div class="flex items-center gap-1.5 md:gap-2 shrink-0">
                 <span id="partnerChip" class="hidden items-center gap-1.5 px-2.5 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold border border-emerald-300 dark:border-emerald-700" title="">
                     <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>
                     <span id="partnerChipText" class="hidden md:inline"></span>
@@ -184,7 +194,8 @@
         
         <!-- HERO HEADER: foto diambil otomatis dari Google Drive -->
         <section id="heroSection" class="hidden relative w-full overflow-hidden bg-slate-900">
-            <div class="relative h-[52vh] min-h-[300px] max-h-[560px] md:h-[56vh]">
+            <!-- HP: tinggi mengikuti isi (tidak terpotong di layar pendek); sm ke atas: tinggi tetap -->
+            <div class="relative min-h-[300px] sm:h-[52vh] sm:max-h-[560px] md:h-[56vh]">
                 <!-- fallback saat foto belum/ gagal termuat -->
                 <div class="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950"></div>
                 <div class="absolute inset-0 flex items-center justify-center text-slate-800 pointer-events-none">
@@ -194,7 +205,7 @@
                 <div id="heroWatermark" class="watermark-layer hidden absolute inset-0 z-10 pointer-events-none"></div>
                 <div class="absolute inset-0 z-10 bg-gradient-to-t from-slate-950/90 via-slate-900/35 to-slate-900/25 pointer-events-none"></div>
 
-                <div class="relative z-20 max-w-6xl mx-auto px-4 h-full flex flex-col justify-end pb-8 md:pb-12">
+                <div class="relative z-20 max-w-6xl mx-auto px-4 min-h-[300px] sm:min-h-0 h-full flex flex-col justify-end pt-14 sm:pt-0 pb-8 md:pb-12">
                     <div id="heroLogoBox" class="hidden mb-3 w-fit"><img id="heroLogo" alt="" draggable="false" class="h-10 md:h-12 max-w-[200px] object-contain" style="filter:drop-shadow(0 2px 8px rgba(0,0,0,.45))"></div>
                     <p id="heroVendor" class="text-[11px] md:text-xs font-bold uppercase tracking-[0.3em] text-white/70 mb-3"></p>
                     <h2 class="text-3xl md:text-5xl font-bold text-white leading-tight drop-shadow-lg">
@@ -313,7 +324,7 @@
                         <h3 class="font-bold text-xl text-slate-800 dark:text-white flex items-center gap-2">
                             <span id="currentFolderDisplay" data-i18n="galleryTitle">Koleksi Foto</span>
                         </h3>
-                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1" data-i18n="galleryDesc">Klik gambar untuk memilih. Klik ikon 🔍 untuk perbesar & tambah catatan.</p>
+                        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1" data-i18n="galleryDesc">Klik gambar untuk memilih. Klik ikon 🔍 untuk perbesar & tambah catatan.</p>
                         <div id="toolbarDeadline" class="hidden mt-2 inline-flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
                             <i class="fa-solid fa-hourglass-half"></i>
                             <span class="js-deadline-text">-</span>
@@ -393,19 +404,23 @@
                 <div id="quotaBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
             </div>
         </div>
-        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-            <div class="flex items-center gap-4">
+        <div class="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between gap-2">
+            <!-- di HP sangat sempit (<360px) lingkaran jumlah disembunyikan; jumlah tetap tampil di header & kuota -->
+            <div class="hidden min-[360px]:flex items-center gap-4">
                 <div class="bg-slate-900 dark:bg-blue-600 text-white font-bold w-12 h-12 rounded-full flex items-center justify-center text-lg shadow-md shrink-0" id="selectedCount">0</div>
                 <div class="hidden sm:block">
                     <p class="font-bold text-slate-800 dark:text-white" data-i18n="selFooterTitle">Foto Terpilih</p>
                     <p class="text-xs text-slate-500 dark:text-slate-400" data-i18n="selFooterDesc">Kirim daftar ini ke tim kami</p>
                 </div>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center justify-end gap-2 w-full min-[360px]:w-auto">
                 <button onclick="downloadList()" class="px-4 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-white font-bold rounded-xl transition flex items-center gap-2 border border-slate-300 dark:border-slate-600 shadow-sm" title="Download file .txt">
                     <i class="fa-solid fa-file-arrow-down text-lg"></i> <span class="hidden md:inline" data-i18n="btnDownload">Download List</span>
                 </button>
-                <button onclick="openConfirm()" id="btnFinish" class="px-5 md:px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition flex items-center gap-2 shadow-lg">
+                <button onclick="downloadAllPhotos()" id="btnDownloadAll" class="px-3 md:px-6 py-2 md:py-3 min-h-[3rem] bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition flex items-center gap-2 shadow-lg text-xs md:text-base leading-tight" title="Download semua foto galeri">
+                    <i id="dlAllIcon" class="fa-solid fa-images text-lg hidden md:inline"></i> <span id="dlAllText" class="max-w-[5.5rem] md:max-w-none text-center md:text-left" data-i18n="btnDownloadAll">Download Semua Foto</span>
+                </button>
+                <button onclick="openConfirm()" id="btnFinish" class="whitespace-nowrap px-4 md:px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition flex items-center gap-2 shadow-lg">
                     <i class="fa-brands fa-whatsapp text-xl"></i> <span class="hidden md:inline" data-i18n="btnWA">Kirim WA</span><span class="md:hidden" data-i18n="btnWA">Kirim WA</span>
                 </button>
             </div>
@@ -445,7 +460,7 @@
     </div>
 
     <div id="tutorialModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] hidden flex-col justify-center items-center opacity-0 transition-opacity duration-300 px-4">
-        <div class="bg-white dark:bg-slate-800 border border-transparent dark:border-slate-700 rounded-3xl max-w-md w-full p-8 shadow-2xl transform scale-95 transition-transform duration-300" id="tutorialContent">
+        <div class="relative bg-white dark:bg-slate-800 border border-transparent dark:border-slate-700 rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl transform scale-95 transition-transform duration-300" id="tutorialContent">
             <div class="absolute top-4 right-4">
                 <button onclick="closeTutorial()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
             </div>
@@ -500,9 +515,15 @@
         </div>
         <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 w-11/12 max-w-md z-50">
             <p class="text-white/50 text-xs md:hidden text-center mb-[-5px] animate-pulse"><i class="fa-solid fa-arrows-left-right"></i> <span data-i18n="swipe">Geser kiri/kanan</span></p>
-            <button id="lightboxSelectBtn" onclick="toggleLightboxSelect()" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition flex items-center justify-center shadow-lg border border-slate-600 w-full sm:w-auto">
-                <i class="fa-regular fa-square-check mr-2"></i> <span id="btnSelectText">Pilih Foto Ini</span>
-            </button>
+            <div class="flex items-stretch justify-center gap-2 w-full">
+                <button id="lightboxSelectBtn" onclick="toggleLightboxSelect()" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition flex items-center justify-center shadow-lg border border-slate-600 w-full sm:w-auto">
+                    <i class="fa-regular fa-square-check mr-2"></i> <span id="btnSelectText">Pilih Foto Ini</span>
+                </button>
+                <!-- Download foto asli: hanya tampil untuk foto yang sudah dipilih -->
+                <button id="lightboxDownloadBtn" onclick="downloadCurrentPhoto()" class="hidden shrink-0 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition items-center justify-center gap-2 shadow-lg border border-slate-600">
+                    <i class="fa-solid fa-download"></i> <span data-i18n="btnDownloadPhoto">Download</span>
+                </button>
+            </div>
             <textarea id="lightboxNote" oninput="saveNote()" data-i18n="notePlaceholder" class="w-full bg-slate-800/90 text-white placeholder-slate-400 text-sm rounded-xl p-3 border border-slate-600 focus:outline-none focus:border-slate-400 hidden transition-all shadow-lg backdrop-blur-sm" rows="2" placeholder="Catatan edit (opsional), misal: hapus jerawat..."></textarea>
         </div>
     </div>
@@ -977,6 +998,8 @@
             const hi = document.getElementById('headerIcon'), wi = document.getElementById('welcomeIcon');
             if (hi) hi.classList.toggle('hidden', on);
             if (wi) wi.classList.toggle('hidden', on);
+            const nb = document.getElementById('headerNameBox');
+            if (nb) { nb.classList.toggle('hidden', on); nb.classList.toggle('sm:block', on); }
             updateHeaderHeightVar();
         }
 
@@ -1567,6 +1590,13 @@
                 selFooterTitle: "Foto Terpilih",
                 selFooterDesc: "Kirim daftar ini ke tim kami",
                 btnDownload: "Download List",
+                btnDownloadPhoto: "Download",
+                btnDownloadAll: "Download Semua Foto",
+                confirmDlAll: "Unduh {n} foto asli dari galeri ini?\n\nFile diunduh satu per satu. Jika browser bertanya, pilih \"Izinkan\" untuk unduhan berganda. Klik tombol lagi untuk membatalkan.",
+                dlAllProgress: "Mengunduh {i}/{n}... (klik untuk batal)",
+                dlAllDone: "{n} foto berhasil diunduh.",
+                dlAllPartial: "{ok} foto diunduh, {fail} gagal.",
+                dlFail: "Gagal mengunduh foto. Coba lagi.",
                 btnWA: "Kirim WA",
                 tutTitle: "Cara Memilih Foto",
                 tutDesc: "Ikuti panduan mudah ini untuk menyeleksi foto favorit Anda:",
@@ -1664,6 +1694,13 @@
                 selFooterTitle: "Selected Photos",
                 selFooterDesc: "Send this list to our team",
                 btnDownload: "Download List",
+                btnDownloadPhoto: "Download",
+                btnDownloadAll: "Download All Photos",
+                confirmDlAll: "Download {n} original photos from this gallery?\n\nFiles are downloaded one by one. If the browser asks, choose \"Allow\" for multiple downloads. Click the button again to cancel.",
+                dlAllProgress: "Downloading {i}/{n}... (click to cancel)",
+                dlAllDone: "{n} photos downloaded.",
+                dlAllPartial: "{ok} photos downloaded, {fail} failed.",
+                dlFail: "Failed to download photo. Please try again.",
                 btnWA: "Send via WA",
                 tutTitle: "How to Select Photos",
                 tutDesc: "Follow these simple steps to select your favorite photos:",
@@ -2691,6 +2728,8 @@
             const isSelected = appState.selectedMap.has(currentZoomPhoto.id);
             const locked = isLocked();
             noteArea.readOnly = locked;
+            const dlBtn = document.getElementById('lightboxDownloadBtn');
+            dlBtn.classList.toggle('hidden', !isSelected); dlBtn.classList.toggle('flex', isSelected);
 
             if (locked) {
                 btn.innerHTML = isSelected
@@ -2721,6 +2760,62 @@
             else if (e.key === 'ArrowRight') nextPhoto();
             else if (e.key === 'ArrowLeft') prevPhoto();
         });
+
+        // ----- Download foto asli (resolusi penuh, tanpa watermark) dari Google Drive -----
+        async function fetchOriginal(photo) {
+            const url = `https://www.googleapis.com/drive/v3/files/${photo.id}?alt=media&key=${CONFIG_APP.googleApiKey}`;
+            for (let attempt = 0; attempt < 2; attempt++) {
+                try {
+                    const res = await fetch(url, { credentials: 'omit' });
+                    if (res.ok) return await res.blob();
+                } catch (e) {}
+                await sleep(2000);   // batas kuota Drive sesaat -> coba sekali lagi
+            }
+            throw new Error('download gagal');
+        }
+
+        function saveBlob(blob, name) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = name;
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 10000);
+        }
+
+        async function downloadCurrentPhoto() {
+            const photo = currentZoomPhoto;
+            if (!photo || !appState.selectedMap.has(photo.id)) return;
+            const btn = document.getElementById('lightboxDownloadBtn');
+            if (btn.disabled) return;
+            const icon = btn.querySelector('i');
+            btn.disabled = true; icon.className = 'fa-solid fa-spinner fa-spin';
+            try { saveBlob(await fetchOriginal(photo), photo.name); }
+            catch (e) { showAlert(t('dlFail'), 'error'); }
+            finally { btn.disabled = false; icon.className = 'fa-solid fa-download'; }
+        }
+
+        // shortcut: hanya foto di folder yang sedang dibuka (sub-folder tidak ikut), upgrade jika galeri memakai sub-folder
+        let dlAllJob = null;
+        async function downloadAllPhotos() {
+            if (dlAllJob) { dlAllJob.cancel = true; return; }
+            const photos = [...appState.originalPhotos];
+            if (!photos.length) return;
+            if (!confirm(t('confirmDlAll', { n: photos.length }))) return;
+
+            const job = dlAllJob = { cancel: false };
+            const text = document.getElementById('dlAllText'), icon = document.getElementById('dlAllIcon');
+            icon.className = 'fa-solid fa-spinner fa-spin text-lg hidden md:inline';
+            let ok = 0, fail = 0;
+            for (let i = 0; i < photos.length && !job.cancel; i++) {
+                text.textContent = t('dlAllProgress', { i: i + 1, n: photos.length });
+                try { saveBlob(await fetchOriginal(photos[i]), photos[i].name); ok++; }
+                catch (e) { fail++; }
+                await sleep(400);   // jeda agar browser & Drive tidak kewalahan
+            }
+            dlAllJob = null;
+            icon.className = 'fa-solid fa-images text-lg hidden md:inline';
+            text.textContent = t('btnDownloadAll');
+            showAlert(fail ? t('dlAllPartial', { ok, fail }) : t('dlAllDone', { n: ok }), fail ? 'error' : 'success');
+        }
 
         function saveNote() {
             if (!currentZoomPhoto || isLocked()) return;

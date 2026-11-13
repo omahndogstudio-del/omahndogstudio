@@ -166,9 +166,14 @@
                 <h2 class="font-bold text-slate-800">Link Klien & Pilihan</h2>
                 <p class="text-[11px] text-slate-500">Lihat siapa yang sudah memilih, perpanjang atau tutup link.</p>
             </div>
-            <button onclick="loadLinkList()" id="btnLoadList" class="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-lg transition flex items-center gap-2">
-                <i class="fa-solid fa-rotate-right"></i> Muat Daftar
-            </button>
+            <div class="flex items-center gap-2 shrink-0">
+                <button onclick="toggleArchiveView()" id="btnArchiveView" class="hidden px-3 py-2 bg-slate-100 text-slate-800 border border-slate-300 hover:bg-slate-200 text-xs font-bold rounded-lg transition items-center gap-2">
+                    <i class="fa-solid fa-box-archive"></i> <span id="archiveViewText">Lihat Arsip</span>
+                </button>
+                <button onclick="loadLinkList()" id="btnLoadList" class="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-lg transition flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i> Muat Daftar
+                </button>
+            </div>
         </div>
         <div id="linkList" class="divide-y divide-slate-100 max-h-[28rem] lg:max-h-[calc(100vh-11rem)] overflow-y-auto">
             <p class="p-6 text-sm text-slate-400 text-center">Klik "Muat Daftar" untuk menampilkan link yang pernah dibuat.</p>
@@ -519,10 +524,20 @@
             liveSchedule();
         }
 
+        // Arsip: link yang sudah selesai disembunyikan dari daftar utama (link klien tetap berfungsi)
+        let showArchived = false;
+        function toggleArchiveView() { showArchived = !showArchived; renderLinkList(Date.now()); }
+
         function renderLinkList(now) {
             const box = document.getElementById('linkList');
-            if (!currentLinks.length) { box.innerHTML = '<p class="p-6 text-sm text-slate-400 text-center">Belum ada link.</p>'; return; }
-            box.innerHTML = currentLinks.map(l => {
+            const archivedCount = currentLinks.filter(l => l.archived).length;
+            if (!archivedCount) showArchived = false;
+            const av = document.getElementById('btnArchiveView');
+            av.classList.toggle('hidden', !archivedCount); av.classList.toggle('flex', !!archivedCount);
+            document.getElementById('archiveViewText').textContent = showArchived ? 'Kembali ke Daftar' : `Lihat Arsip (${archivedCount})`;
+            const shown = currentLinks.filter(l => !!l.archived === showArchived);
+            if (!shown.length) { box.innerHTML = '<p class="p-6 text-sm text-slate-400 text-center">Belum ada link.</p>'; return; }
+            box.innerHTML = shown.map(l => {
                 const expired = l.deadline !== null && now > l.deadline;
                 let state, tone;
                 if (l.closed) { state = 'Ditutup'; tone = 'bg-slate-100 text-slate-600'; }
@@ -550,6 +565,8 @@
                         <button onclick="sendToSorter('${l.code}')" class="px-3 py-1.5 text-[11px] font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm transition ${l.selectedCount ? '' : 'opacity-50'}" title="Kirim daftar foto pilihan klien langsung ke Auto RAW Sorter"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Pakai di RAW Sorter</button>
                         <button onclick="extendLink('${l.code}')" class="px-3 py-1.5 text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-300 rounded-lg hover:bg-slate-200 transition"><i class="fa-solid fa-calendar-plus mr-1"></i>Perpanjang</button>
                         <button onclick="toggleLinkClosed('${l.code}', ${l.closed ? 'false' : 'true'})" class="px-3 py-1.5 text-[11px] font-bold bg-white border ${l.closed ? 'border-blue-300 text-blue-700 hover:bg-blue-50' : 'border-rose-300 text-rose-700 hover:bg-rose-50'} rounded-lg transition"><i class="fa-solid ${l.closed ? 'fa-lock-open' : 'fa-lock'} mr-1"></i>${l.closed ? 'Buka Lagi' : 'Tutup Sekarang'}</button>
+                        <button onclick="editKuota('${l.code}')" class="px-3 py-1.5 text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-300 rounded-lg hover:bg-slate-200 transition"><i class="fa-solid fa-images mr-1"></i>Ubah Kuota</button>
+                        <button onclick="setArchived('${l.code}', ${l.archived ? 'false' : 'true'})" class="px-3 py-1.5 text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-300 rounded-lg hover:bg-slate-200 transition"><i class="fa-solid ${l.archived ? 'fa-box-open' : 'fa-box-archive'} mr-1"></i>${l.archived ? 'Kembalikan' : 'Arsipkan'}</button>
                     </div>
                 </div>`;
             }).join('');
@@ -600,6 +617,36 @@
             const d = new Date(); d.setDate(d.getDate() + days); d.setHours(23, 59, 0, 0);
             try {
                 if (await updateLinkOnServer(code, { deadline: d.getTime(), status: 'aktif' })) { showAlert('Batas waktu diperpanjang.'); loadLinkList(); }
+            } catch (e) { showAlert('Server tidak dapat dihubungi.', true); }
+        }
+
+        async function editKuota(code) {
+            const l = currentLinks.find(x => x.code === code);
+            if (!l) return;
+            const input = prompt(`Kuota foto baru untuk ${l.name || code}?\nSaat ini: ${l.kuota ? l.kuota + ' foto' : 'tanpa batas'} · sudah dipilih: ${l.selectedCount || 0} foto\n\nKosongkan untuk tanpa batas.`, l.kuota || '');
+            if (input === null) return;
+            const txt = input.trim();
+            const kuota = txt === '' ? null : parseInt(txt, 10);
+            if (txt !== '' && !(kuota > 0 && String(kuota) === txt)) return showAlert('Masukkan angka kuota yang valid (atau kosongkan).', true);
+            if (kuota === l.kuota) return;
+            if (kuota !== null && kuota < (l.selectedCount || 0) &&
+                !confirm(`Klien sudah memilih ${l.selectedCount} foto, lebih dari kuota baru (${kuota}).\nKlien harus membatalkan sebagian pilihan sebelum bisa menyimpan lagi. Lanjutkan?`)) return;
+            try {
+                if (await updateLinkOnServer(code, { kuota: kuota === null ? '' : kuota })) {
+                    showAlert(kuota === null ? 'Kuota diubah menjadi tanpa batas.' : `Kuota diubah menjadi ${kuota} foto.`);
+                    loadLinkList();
+                }
+            } catch (e) { showAlert('Server tidak dapat dihubungi.', true); }
+        }
+
+        async function setArchived(code, on) {
+            try {
+                if (!(await updateLinkOnServer(code, { archived: on }))) return;
+                await loadLinkList(true);
+                const l = currentLinks.find(x => x.code === code);
+                // Code.gs lama mengabaikan 'archived' (tidak mengirim kolom arsip sama sekali)
+                if (l && l.archived === undefined) return showAlert('Code.gs di server belum versi terbaru. Tempel Code.gs baru lalu Deploy > New version.', true);
+                showAlert(on ? 'Link diarsipkan.' : 'Link dikembalikan ke daftar.');
             } catch (e) { showAlert('Server tidak dapat dihubungi.', true); }
         }
 

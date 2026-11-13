@@ -1,0 +1,5 @@
+# Kode server Apps Script (berisi ADMIN_KEY) - repo ini publik, jangan pernah di-commit
+Code.gs
+*.gs
+# Hasil npm install (server lokal)
+node_modules/

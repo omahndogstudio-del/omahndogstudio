@@ -1,0 +1,7 @@
+# Kode server Apps Script (berisi ADMIN_KEY) - jangan pernah ikut ter-publish
+Code.gs
+# Alat server lokal (npm run dev), tidak dipakai di Vercel
+node_modules
+package.json
+package-lock.json
+serve.json
