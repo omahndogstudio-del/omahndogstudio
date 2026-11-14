@@ -597,8 +597,11 @@ function fail(msg) {
     document.getElementById('galleryWrap').classList.remove('hidden');
     document.getElementById('pageFooter').classList.remove('hidden');
 
-    // setelah galeri tampil: saat masih tersembunyi, lebar kolom terbaca 0 dan ubin mosaik jadi gepeng
-    try { if (localStorage.getItem('cp_hasil_mode') === 'grid') setMode('grid'); } catch (e) {}
+    // mosaik adalah tampilan awal; dipanggil setelah galeri tampil karena saat
+    // masih tersembunyi lebar kolom terbaca 0 dan ubin mosaik jadi gepeng
+    let savedMode = null;
+    try { savedMode = localStorage.getItem('cp_hasil_mode'); } catch (e) {}
+    if (savedMode !== 'film') setMode('grid');
     updateDarkModeIcon(document.documentElement.classList.contains('dark'));
 })();
 </script>
