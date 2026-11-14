@@ -360,7 +360,7 @@ function renderFilm() {
                 <img loading="lazy" data-id="${p.id}" src="${imgUrl(p.id, 1600)}" alt="${esc(p.name)}" onload="imgOk(this)" onerror="imgFail(this,1600)">
             </div>
             <figcaption class="flex items-center justify-center gap-3 mt-3 px-1">
-                <span class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium truncate">${esc(p.name)}</span>
+                <span class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium truncate">Foto ${i + 1}</span>
                 <button onclick="downloadOne(${i},this)" class="shrink-0 px-3 py-2 text-xs font-bold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center gap-1.5">
                     <i class="fa-solid fa-download"></i><span class="hidden sm:inline">Unduh</span>
                 </button>
@@ -378,8 +378,7 @@ function renderGrid() {
             <div class="ph">
                 <img loading="lazy" data-id="${p.id}" src="${imgUrl(p.id, size)}" alt="${esc(p.name)}" onload="imgOk(this)" onerror="imgFail(this,${size})">
                 <div class="tile-ov">
-                    <h3>${esc(p.name.replace(/\.[^.]+$/, ''))}</h3>
-                    <p>Foto ${i + 1}</p>
+                    <h3>Foto ${i + 1}</h3>
                 </div>
             </div>
         </figure>`;
@@ -444,7 +443,7 @@ function openLightbox(i) {
     state.idx = i;
     const p = state.photos[i];
     const lb = document.getElementById('lightbox');
-    document.getElementById('lbTitle').textContent = `${p.name} (${i + 1} dari ${state.photos.length})`;
+    document.getElementById('lbTitle').textContent = `Foto ${i + 1} dari ${state.photos.length}`;
     const img = document.getElementById('lbImg');
     img.dataset.id = p.id; delete img.dataset.alt;
     img.onerror = () => imgFailPlain(img);

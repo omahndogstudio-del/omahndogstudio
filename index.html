@@ -95,15 +95,11 @@
             background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
             background-size: 800px 100%;
         }
-        .photo-card img.photo-img { opacity: 0; transition: opacity 0.45s ease, transform 0.3s ease; }
+        .photo-card img.photo-img { opacity: 0; transition: opacity 0.45s ease, transform 0.3s ease; touch-action: manipulation; }
         .photo-card img.photo-img.loaded { opacity: 1; }
         .photo-card.img-done { background-image: none; animation: none; }
 
-        /* Nama foto & tombol zoom: tampil saat hover di desktop, selalu tampil di layar sentuh */
-        .card-bottom { opacity: 1; transition: opacity 0.2s ease; }
         @media (hover: hover) {
-            .card-bottom { opacity: 0; }
-            .photo-card:hover .card-bottom { opacity: 1; }
             .photo-card:hover img.photo-img.loaded { transform: scale(1.03); }
             .photo-card.selected:hover img.photo-img.loaded { transform: none; }
         }
@@ -324,7 +320,7 @@
                         <h3 class="font-bold text-xl text-slate-800 dark:text-white flex items-center gap-2">
                             <span id="currentFolderDisplay" data-i18n="galleryTitle">Koleksi Foto</span>
                         </h3>
-                        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1" data-i18n="galleryDesc">Klik gambar untuk memilih. Klik ikon 🔍 untuk perbesar & tambah catatan.</p>
+                        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1" data-i18n="galleryDesc">Klik gambar untuk memilih. Klik dua kali untuk perbesar &amp; tambah catatan.</p>
                         <div id="toolbarDeadline" class="hidden mt-2 inline-flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
                             <i class="fa-solid fa-hourglass-half"></i>
                             <span class="js-deadline-text">-</span>
@@ -351,12 +347,12 @@
                         <!-- DROPDOWN URUTAN -->
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-arrow-down-a-z text-slate-400 text-sm"></i>
+                                <i class="fa-solid fa-arrow-down-wide-short text-slate-400 text-sm"></i>
                             </div>
                             <select id="sortDropdown" onchange="applySort(this.value)" class="text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 py-2 pl-9 pr-8 rounded-lg font-medium cursor-pointer shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-800 appearance-none transition">
                                 <option value="default" data-i18n="sortDefault">Urutan Asli</option>
-                                <option value="asc">A - Z</option>
-                                <option value="desc">Z - A</option>
+                                <option value="newest" data-i18n="sortNewest">Terbaru ke Lama</option>
+                                <option value="oldest" data-i18n="sortOldest">Lama ke Terbaru</option>
                                 <option value="random" data-i18n="sortRandom">Acak (Random)</option>
                             </select>
                             <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
@@ -374,6 +370,10 @@
                                 <div class="tooltip-triangle"></div>
                             </div>
                         </div>
+
+                        <button onclick="deselectAll()" id="btnDeselectAll" class="hidden text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 py-2 px-3 rounded-lg font-medium transition shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700" title="Batal Pilih Semua">
+                            <i class="fa-solid fa-eraser"></i> <span class="hidden sm:inline ml-1" data-i18n="btnDeselectAll">Batal Pilih Semua</span>
+                        </button>
 
                         <button onclick="toggleViewMode()" id="viewModeBtn" class="text-sm bg-slate-800 dark:bg-slate-700 text-white py-2 px-4 rounded-lg font-medium transition flex items-center gap-2 shadow-sm hover:bg-slate-700 dark:hover:bg-slate-600 border border-transparent dark:border-slate-600">
                             <i class="fa-solid fa-filter"></i> <span id="btnViewText">Lihat Pilihan</span> (0)
@@ -478,7 +478,7 @@
                 </li>
                 <li class="flex items-start gap-4">
                     <div class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0 shadow-md">2</div>
-                    <p class="text-sm text-slate-600 dark:text-slate-300 pt-1" data-i18n="tut2"><strong>Zoom & Catatan:</strong> Klik ikon <i class="fa-solid fa-magnifying-glass-plus text-slate-800 dark:text-white mx-1"></i> untuk memperbesar gambar & tambah instruksi edit.</p>
+                    <p class="text-sm text-slate-600 dark:text-slate-300 pt-1" data-i18n="tut2"><strong>Zoom &amp; Catatan:</strong> Klik dua kali pada foto untuk memperbesar gambar &amp; tambah instruksi edit.</p>
                 </li>
                 <li class="flex items-start gap-4">
                     <div class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0 shadow-md">3</div>
@@ -597,7 +597,7 @@
             const payload = JSON.stringify({
                 t: Date.now(),
                 f: listing.folders.map(x => [x.id, x.name]),
-                p: listing.photos.map(x => [x.id, x.name, x.w || 0, x.h || 0])
+                p: listing.photos.map(x => [x.id, x.name, x.w || 0, x.h || 0, x.d || 0])
             });
             try { localStorage.setItem(LIST_PREFIX + folderId, payload); }
             catch (e) { pruneListCache(); try { localStorage.setItem(LIST_PREFIX + folderId, payload); } catch (e2) {} }
@@ -606,7 +606,7 @@
         function listFromCache(entry) {
             return {
                 folders: entry.f.map(([id, name]) => ({ id, name })),
-                photos: entry.p.map(([id, name, w, h]) => ({ id, name, w, h }))
+                photos: entry.p.map(([id, name, w, h, d]) => ({ id, name, w, h, d: d || 0 }))
             };
         }
 
@@ -633,10 +633,21 @@
             throw lastErr;
         }
 
+        // Waktu foto untuk urutan terbaru/terlama: pakai waktu pemotretan (EXIF),
+        // kalau tidak ada pakai waktu unggah ke Drive.
+        function photoTime(f) {
+            const ex = f.imageMediaMetadata && f.imageMediaMetadata.time;
+            if (ex) {
+                const t = Date.parse(String(ex).replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3'));
+                if (!isNaN(t)) return t;
+            }
+            return Date.parse(f.createdTime) || 0;
+        }
+
         async function fetchFolderFromApi(folderId) {
             let files = [], pageToken = '';
             const q = encodeURIComponent(`'${folderId}' in parents and trashed=false`);
-            const fields = encodeURIComponent('nextPageToken,files(id,name,mimeType,imageMediaMetadata(width,height))');
+            const fields = encodeURIComponent('nextPageToken,files(id,name,mimeType,createdTime,imageMediaMetadata(width,height,time))');
             do {
                 let url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=${fields}&key=${CONFIG_APP.googleApiKey}&pageSize=1000`;
                 if (pageToken) url += `&pageToken=${encodeURIComponent(pageToken)}`;
@@ -649,7 +660,7 @@
             return {
                 folders: files.filter(isFolder).map(f => ({ id: f.id, name: f.name })),
                 photos: files.filter(f => !isFolder(f)).map(f => ({
-                    id: f.id, name: f.name,
+                    id: f.id, name: f.name, d: photoTime(f),
                     w: (f.imageMediaMetadata && f.imageMediaMetadata.width) || 0,
                     h: (f.imageMediaMetadata && f.imageMediaMetadata.height) || 0
                 }))
@@ -1583,9 +1594,13 @@
                 folderTitle: "Sub-Folder Tersedia",
                 btnBackFolder: "Kembali",
                 galleryTitle: "Koleksi Foto",
-                galleryDesc: "Klik gambar untuk memilih. Klik ikon 🔍 untuk perbesar & tambah catatan.",
+                galleryDesc: "Klik gambar untuk memilih. Klik dua kali untuk perbesar & tambah catatan.",
                 sortDefault: "Urutan Asli",
+                sortNewest: "Terbaru ke Lama",
+                sortOldest: "Lama ke Terbaru",
                 sortRandom: "Acak (Random)",
+                btnDeselectAll: "Batal Pilih Semua",
+                confirmDeselectAll: "Batalkan semua {n} foto yang sudah dipilih? Catatan edit pada foto-foto itu ikut terhapus.",
                 btnReshuffle: "Acak Lagi",
                 btnViewSel: "Lihat Pilihan",
                 btnViewAll: "Lihat Semua Folder",
@@ -1604,7 +1619,7 @@
                 tutTitle: "Cara Memilih Foto",
                 tutDesc: "Ikuti panduan mudah ini untuk menyeleksi foto favorit Anda:",
                 tut1: "<strong>Pilih Foto:</strong> Klik (tap) langsung pada gambar foto untuk memilihnya.",
-                tut2: "<strong>Zoom & Catatan:</strong> Klik ikon <i class='fa-solid fa-magnifying-glass-plus text-slate-800 dark:text-white mx-1'></i> untuk memperbesar gambar & tambah instruksi edit.",
+                tut2: "<strong>Zoom & Catatan:</strong> <b>Klik dua kali</b> pada foto untuk memperbesar gambar & tambah instruksi edit.",
                 tut4: "<strong>Tampilan & Urutan:</strong> Klik ikon <i class='fa-solid fa-table-cells-large text-slate-800 dark:text-white mx-1'></i> untuk mengubah jumlah baris grid foto. Gunakan dropdown untuk melihat foto dalam <em>'Urutan Asli'</em> (berdasarkan jam foto) atau <em>'Acak'</em>. Klik tombol <em>'Lihat Pilihan'</em> untuk meninjau foto yang sudah dipilih.",
                 tut3: "<strong>Kirim List:</strong> Jika sudah selesai, klik tombol Kirim WA atau Download di bagian bawah layar.",
                 btnTut: "Mengerti, Mulai Memilih!",
@@ -1649,7 +1664,7 @@
                 btnTourReplay: "<i class=\"fa-solid fa-route mr-1\"></i> Ulangi Tur Interaktif",
                 tourNext: "Lanjut", tourPrev: "Kembali", tourSkip: "Lewati", tourDone: "Mulai Memilih", tourStep: "Langkah {i} dari {n}",
                 tourT1: "Selamat datang! 👋", tourD1: "Tur singkat ini menunjukkan cara memilih foto. Hanya tampil sekali, dan bisa dilewati kapan saja.",
-                tourT2: "Pilih foto favorit", tourD2: "<b>Ketuk foto</b> untuk memilihnya (muncul tanda centang). Ketuk ikon kaca pembesar untuk memperbesar dan menambah catatan edit.",
+                tourT2: "Pilih foto favorit", tourD2: "<b>Ketuk foto</b> untuk memilihnya (muncul tanda centang). <b>Ketuk dua kali</b> untuk memperbesar dan menambah catatan edit.",
                 tourT3: "Urutan foto", tourD3: "Lihat foto dalam <b>Urutan Asli</b> (sesuai jam pemotretan) atau <b>Acak</b>.",
                 tourT4: "Pilihan Fotoku", tourD4: "Tekan menu ini kapan saja untuk melihat foto yang sudah Anda pilih beserta jumlahnya.",
                 tourT5: "Memilih berdua", tourD5: "Pasangan Anda bisa membuka <b>link yang sama</b> di HP-nya. Pilihan kalian digabung otomatis dan tersimpan, jadi tidak saling menimpa.",
@@ -1687,9 +1702,13 @@
                 folderTitle: "Available Sub-Folders",
                 btnBackFolder: "Go Back",
                 galleryTitle: "Photo Collection",
-                galleryDesc: "Click an image to select. Click 🔍 to zoom & add notes.",
+                galleryDesc: "Click an image to select. Double-click to zoom & add notes.",
                 sortDefault: "Original Order",
+                sortNewest: "Newest First",
+                sortOldest: "Oldest First",
                 sortRandom: "Randomize",
+                btnDeselectAll: "Clear Selection",
+                confirmDeselectAll: "Clear all {n} selected photos? Their editing notes will be removed too.",
                 btnReshuffle: "Shuffle Again",
                 btnViewSel: "View Selection",
                 btnViewAll: "View All Folders",
@@ -1708,7 +1727,7 @@
                 tutTitle: "How to Select Photos",
                 tutDesc: "Follow these simple steps to select your favorite photos:",
                 tut1: "<strong>Select Photo:</strong> Click (tap) directly on the image to select it.",
-                tut2: "<strong>Zoom & Notes:</strong> Click the <i class='fa-solid fa-magnifying-glass-plus text-slate-800 dark:text-white mx-1'></i> icon to enlarge & add editing instructions.",
+                tut2: "<strong>Zoom & Notes:</strong> <b>Double-click</b> a photo to enlarge it & add editing instructions.",
                 tut4: "<strong>View & Sort:</strong> Click the <i class='fa-solid fa-table-cells-large text-slate-800 dark:text-white mx-1'></i> icon to change grid layout. Use the dropdown to view photos in <em>'Original Order'</em> or <em>'Random'</em>. Click <em>'View Selection'</em> to review your chosen photos.",
                 tut3: "<strong>Send List:</strong> When finished, click the Send via WA or Download button at the bottom.",
                 btnTut: "Got it, Start Selecting!",
@@ -1753,7 +1772,7 @@
                 btnTourReplay: "<i class=\"fa-solid fa-route mr-1\"></i> Replay Interactive Tour",
                 tourNext: "Next", tourPrev: "Back", tourSkip: "Skip", tourDone: "Start Choosing", tourStep: "Step {i} of {n}",
                 tourT1: "Welcome! 👋", tourD1: "This quick tour shows you how to pick your photos. It only appears once and you can skip it anytime.",
-                tourT2: "Choose your favorites", tourD2: "<b>Tap a photo</b> to select it (a check mark appears). Tap the magnifier icon to zoom in and add an editing note.",
+                tourT2: "Choose your favorites", tourD2: "<b>Tap a photo</b> to select it (a check mark appears). <b>Double-tap</b> to zoom in and add an editing note.",
                 tourT3: "Photo order", tourD3: "View photos in <b>Original order</b> (by shooting time) or <b>Random</b>.",
                 tourT4: "My Picks", tourD4: "Tap this menu anytime to see the photos you have selected and how many.",
                 tourT5: "Choosing together", tourD5: "Your partner can open the <b>same link</b> on their phone. Your picks are merged and saved automatically, so nobody overwrites the other.",
@@ -2127,7 +2146,7 @@
                 if (data.photos.length > 0 || data.folders.length > 0 || appState.folderHistory.length > 0) {
                     appState.folders = data.folders;
                     appState.photos = data.photos.map(f => ({
-                        id: f.id, name: f.name, w: f.w, h: f.h, folderName: displayTitle
+                        id: f.id, name: f.name, w: f.w, h: f.h, d: f.d || 0, folderName: displayTitle
                     }));
                     appState.originalPhotos = [...appState.photos];
 
@@ -2225,10 +2244,10 @@
 
             if (order === 'default') {
                 appState.photos = [...appState.originalPhotos];
-            } else if (order === 'asc') {
-                appState.photos.sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric: true, sensitivity: 'base'}));
-            } else if (order === 'desc') {
-                appState.photos.sort((a, b) => b.name.localeCompare(a.name, undefined, {numeric: true, sensitivity: 'base'}));
+            } else if (order === 'newest') {
+                appState.photos.sort((a, b) => (b.d || 0) - (a.d || 0));
+            } else if (order === 'oldest') {
+                appState.photos.sort((a, b) => (a.d || 0) - (b.d || 0));
             } else if (order === 'random') {
                 let array = [...appState.photos];
                 for (let i = array.length - 1; i > 0; i--) {
@@ -2397,27 +2416,11 @@
                     overlay.appendChild(noteBadge);
                 }
 
-                const bottomArea = document.createElement('div');
-                const bottomPad = isSmallGrid ? 'p-1.5 pt-4' : 'p-3 pt-8';
-                const textSize = isSmallGrid ? 'text-[9px]' : 'text-xs';
-                const btnSize = isSmallGrid ? 'w-5 h-5 text-[10px] rounded' : 'w-8 h-8 rounded-lg';
-
-                bottomArea.className = `card-bottom absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent ${bottomPad} flex justify-between items-end z-20 pointer-events-none`;
-
-                const nameText = document.createElement('p');
-                nameText.className = `text-white ${textSize} font-medium truncate drop-shadow-md w-3/4`;
-                nameText.textContent = photo.name;
-
-                const zoomBtn = document.createElement('button');
-                zoomBtn.className = `pointer-events-auto text-white bg-black/40 hover:bg-blue-600 ${btnSize} flex items-center justify-center shadow-lg transition-colors`;
-                zoomBtn.setAttribute('aria-label', 'Zoom');
-                zoomBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass-plus"></i>';
-
+                // klik = pilih, klik dua kali = buka foto besar + catatan edit
                 const targetIndex = appState.viewMode === 'selected' ? index : globalIndex;
-                zoomBtn.onclick = (e) => { e.stopPropagation(); openLightbox(targetIndex); };
+                img.ondblclick = (e) => { e.preventDefault(); openLightbox(targetIndex); };
 
-                bottomArea.appendChild(nameText); bottomArea.appendChild(zoomBtn);
-                card.appendChild(overlay); card.appendChild(bottomArea);
+                card.appendChild(overlay);
                 frag.appendChild(card);
             });
             grid.appendChild(frag);
@@ -2497,8 +2500,22 @@
             if (appState.viewMode === 'all') updateViewModeText();
         }
 
+        function deselectAll() {
+            if (guardLocked()) return;
+            const n = appState.selectedMap.size;
+            if (!n) return;
+            if (!confirm(t('confirmDeselectAll', { n }))) return;
+            appState.selectedMap.clear();
+            appState.notes = {};
+            appState.viewMode = 'all';
+            appState.currentPage = 1;
+            updateActionBar(); saveProgress(); renderGallery(); updateViewModeText();
+        }
+
         function updateActionBar() {
             const count = appState.selectedMap.size;
+            const btnDeselect = document.getElementById('btnDeselectAll');
+            if (btnDeselect) btnDeselect.classList.toggle('hidden', count === 0);
             const bar = document.getElementById('actionBar');
             document.getElementById('selectedCount').textContent = count;
             updateMyPicksBtn();
@@ -2658,7 +2675,7 @@
                 setTimeout(() => {
                     currentZoomIndex = index; 
                     currentZoomPhoto = photosToProcess[index];
-                    document.getElementById('lightboxTitle').textContent = `${currentZoomPhoto.name} (${index + 1} of ${photosToProcess.length})`;
+                    document.getElementById('lightboxTitle').textContent = `Foto ${index + 1} / ${photosToProcess.length}`;
                     setLightboxImgSrc(imgEl, currentZoomPhoto);
                     updateLightboxSelectBtn();
                     
@@ -2673,7 +2690,7 @@
             } else {
                 currentZoomIndex = index; 
                 currentZoomPhoto = photosToProcess[index];
-                document.getElementById('lightboxTitle').textContent = `${currentZoomPhoto.name} (${index + 1} of ${photosToProcess.length})`;
+                document.getElementById('lightboxTitle').textContent = `Foto ${index + 1} / ${photosToProcess.length}`;
                 setLightboxImgSrc(imgEl, currentZoomPhoto);
                 updateLightboxSelectBtn();
                 
