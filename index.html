@@ -1235,6 +1235,9 @@
                 data = cached; offline = true;   // server tidak terjangkau: pakai salinan terakhir
             }
 
+            // link galeri hasil edit dibuka di halaman presentasinya sendiri
+            if (data.link && data.link.tipe === 'hasil') { location.replace('hasil?c=' + encodeURIComponent(code)); return; }
+
             applyRemoteLink(data.link);
             appState.remoteSelection = data.selection || null;
             document.getElementById('driveLink').value = `https://drive.google.com/drive/folders/${data.link.folderId}`;
